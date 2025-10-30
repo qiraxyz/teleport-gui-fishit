@@ -1,0 +1,34 @@
+workspace.Islands["Ancient Jungle"]["Jungle Cove"]:GetChildren()[365]
+workspace.Islands["Ancient Jungle"]["Jungle Cove"]["Swamp ISLAND"].Model
+workspace.Islands["Coral Reefs"]:GetChildren()[20]
+workspace.Islands["Cystal Island"].Crate2
+workspace.Islands["Esoteric Depths"]:GetChildren()[12]
+workspace.Islands["Esoteric Island"]:GetChildren()[15]
+workspace.Islands["Fisherman Island"].Base
+workspace.Islands.Kohana:GetChildren()[214]
+
+workspace.Islands["Mount Hallow"].Dock
+workspace.Islands["Tropical Grove"].Telescope
+workspace.Islands["Crystal Cavern"]
+
+
+-- fish spot secret
+workspace.Islands["Crystal Cavern"]:GetChildren()[31]
+
+
+-- for fishing rod
+
+-- Bundle from Lost Isle
+workspace.Islands["Lost Isle"]["Fishing Rod Ruins"]
+workspace.Islands["Lost Isle"]["Treasure Ruins"]
+
+-- tropical grove Ares Rod
+workspace.Islands["Tropical Grove"].Crate2 -- Ares Rod
+
+--  this is bundle ancient jungle
+workspace.Islands["Ancient Jungle"]["!!! THE TEMPLE"]
+workspace.Islands["Ancient Jungle"]:GetChildren()[39] -- bamboo rod
+
+-- lava and another rod in Kohana Island
+workspace.Islands.Kohana.LAVA_FALLS:GetChildren()[4] -- lava rod quest
+workspace.Islands.Kohana:GetChildren()[247]

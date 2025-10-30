@@ -1,0 +1,318 @@
+local p=game.Players.LocalPlayer
+local g=Instance.new("ScreenGui")
+g.Name="TP_UI"
+g.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+g.ResetOnSpawn=false
+g.IgnoreGuiInset=true
+g.Parent=game:GetService("CoreGui")
+
+local function mk(txt,sz,bold)
+	local t=Instance.new("TextLabel")
+	t.BackgroundTransparency=1
+	t.Font=Enum.Font.Gotham
+	t.Text=txt
+	t.TextSize=sz or 18
+	t.TextXAlignment=Enum.TextXAlignment.Left
+	t.TextColor3=Color3.fromRGB(235,235,235)
+	if bold then t.FontFace=Font.new(t.FontFace.Family,Enum.FontWeight.Bold) end
+	return t
+end
+
+local main=Instance.new("Frame")
+main.Name="Main"
+main.Parent=g
+main.Size=UDim2.fromOffset(360,420)
+main.Position=UDim2.new(0,24,0.25,0)
+main.BackgroundColor3=Color3.fromRGB(26,26,26)
+main.BorderColor3=Color3.fromRGB(60,60,60)
+main.BorderSizePixel=1
+
+local top=Instance.new("Frame")
+top.Parent=main
+top.Size=UDim2.new(1,0,0,40)
+top.BackgroundColor3=Color3.fromRGB(34,34,34)
+top.BorderSizePixel=0
+
+local title=mk("Teleport Hub",20,true)
+title.Parent=top
+title.Position=UDim2.new(0,14,0,7)
+title.Size=UDim2.fromOffset(240,26)
+
+local close=Instance.new("TextButton")
+close.Parent=top
+close.Size=UDim2.fromOffset(40,36)
+close.Position=UDim2.new(1,-44,0,2)
+close.Text="X"
+close.Font=Enum.Font.GothamBlack
+close.TextSize=20
+close.BackgroundTransparency=1
+close.TextColor3=Color3.fromRGB(240,96,96)
+
+local mini=Instance.new("TextButton")
+mini.Parent=top
+mini.Size=UDim2.fromOffset(40,36)
+mini.Position=UDim2.new(1,-88,0,2)
+mini.Text="–"
+mini.Font=Enum.Font.GothamBlack
+mini.TextSize=22
+mini.BackgroundTransparency=1
+mini.TextColor3=Color3.fromRGB(200,200,200)
+
+local body=Instance.new("Frame")
+body.Parent=main
+body.Position=UDim2.new(0,0,0,40)
+body.Size=UDim2.new(1,0,1,-40)
+body.BackgroundTransparency=1
+
+local list=Instance.new("UIListLayout",body)
+list.Padding=UDim.new(0,8)
+list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+
+local function bigButton(text)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(1,-24,0,44)
+	b.BackgroundColor3=Color3.fromRGB(38,38,38)
+	b.BorderColor3=Color3.fromRGB(70,70,70)
+	b.Font=Enum.Font.Gotham
+	b.TextSize=19
+	b.TextColor3=Color3.fromRGB(235,235,235)
+	b.Text=text
+	return b
+end
+
+local function dropdown(label)
+	local holder=Instance.new("Frame")
+	holder.Size=UDim2.new(1,-24,0,60)
+	holder.BackgroundColor3=Color3.fromRGB(38,38,38)
+	holder.BorderColor3=Color3.fromRGB(70,70,70)
+	holder.BorderSizePixel=1
+
+	local l=mk(label,17,true) l.Parent=holder l.Position=UDim2.new(0,12,0,6) l.Size=UDim2.fromOffset(220,20)
+
+	local clr=Instance.new("TextButton")
+	clr.Parent=holder
+	clr.Size=UDim2.fromOffset(28,24)
+	clr.Position=UDim2.new(1,-34,0,6)
+	clr.Text="X"
+	clr.Font=Enum.Font.GothamBold
+	clr.TextSize=16
+	clr.BackgroundColor3=Color3.fromRGB(48,48,48)
+	clr.BorderColor3=Color3.fromRGB(90,90,90)
+	clr.TextColor3=Color3.fromRGB(235,235,235)
+
+	local btn=Instance.new("TextButton")
+	btn.Parent=holder
+	btn.Size=UDim2.new(1,-24,0,32)
+	btn.Position=UDim2.new(0,12,0,26)
+	btn.BackgroundColor3=Color3.fromRGB(30,30,30)
+	btn.BorderColor3=Color3.fromRGB(65,65,65)
+	btn.Font=Enum.Font.Gotham
+	btn.TextSize=18
+	btn.TextColor3=Color3.fromRGB(235,235,235)
+	btn.Text="Pilih…"
+
+	local listFrm=Instance.new("ScrollingFrame")
+	listFrm.Parent=holder
+	listFrm.Size=UDim2.new(1,-24,0,150)
+	listFrm.Position=UDim2.new(0,12,0,60)
+	listFrm.CanvasSize=UDim2.new(0,0,0,0)
+	listFrm.BackgroundColor3=Color3.fromRGB(28,28,28)
+	listFrm.BorderColor3=Color3.fromRGB(65,65,65)
+	listFrm.Visible=false
+	listFrm.ScrollBarThickness=8
+
+	local ll=Instance.new("UIListLayout",listFrm) ll.Padding=UDim.new(0,6)
+
+	local value=nil
+	local function setCanvas() task.defer(function() listFrm.CanvasSize=UDim2.new(0,0,0,(#listFrm:GetChildren()-1)*42+12) end) end
+	local function addOpt(name,cb)
+		local o=Instance.new("TextButton")
+		o.Parent=listFrm
+		o.Size=UDim2.new(1,-12,0,36)
+		o.BackgroundColor3=Color3.fromRGB(40,40,40)
+		o.BorderColor3=Color3.fromRGB(70,70,70)
+		o.Text=name
+		o.Font=Enum.Font.Gotham
+		o.TextSize=18
+		o.TextColor3=Color3.fromRGB(235,235,235)
+		o.MouseButton1Click:Connect(function()
+			value={name,cb}
+			btn.Text=name
+			listFrm.Visible=false
+			holder.Size=UDim2.new(1,-24,0,60)
+		end)
+	end
+	btn.MouseButton1Click:Connect(function()
+		local v=not listFrm.Visible
+		listFrm.Visible=v
+		holder.Size=v and UDim2.new(1,-24,0,214) or UDim2.new(1,-24,0,60)
+	end)
+	clr.MouseButton1Click:Connect(function()
+		value=nil
+		btn.Text="Pilih…"
+		listFrm.Visible=false
+		holder.Size=UDim2.new(1,-24,0,60)
+	end)
+
+	return holder,{add=addOpt,get=function()return value end,clearSelect=function() value=nil btn.Text="Pilih…" end,clear=function() for _,c in ipairs(listFrm:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end setCanvas() end},setCanvas
+end
+
+local info=mk("Pilih tujuan lalu tekan Teleport. UI bisa di-drag.",15)
+info.Parent=body
+info.Size=UDim2.new(1,-24,0,20)
+info.Position=UDim2.new(0,12,0,0)
+
+local ddNpcFrame,ddNpc,ddNpcCanvas=dropdown("NPC")
+ddNpcFrame.Parent=body
+local ddIslFrame,ddIsl,ddIslCanvas=dropdown("Island")
+ddIslFrame.Parent=body
+local ddRodFrame,ddRod,ddRodCanvas=dropdown("Rod & Secret")
+ddRodFrame.Parent=body
+
+local tpBtn=bigButton("Teleport")
+tpBtn.Parent=body
+local refreshBtn=bigButton("Refresh NPC")
+refreshBtn.Parent=body
+local offBtn=bigButton("Matikan GUI")
+offBtn.Parent=body
+
+local function getCFrom(obj)
+	if not obj then return nil end
+	if obj:IsA("Model") then
+		return obj:GetPivot()
+	elseif obj:IsA("BasePart") then
+		return obj.CFrame
+	else
+		local hrp=obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+		if hrp then return hrp:GetPivot() end
+	end
+	return nil
+end
+
+local function safeIndex(getter)
+	local ok,res=pcall(getter)
+	if not ok then return nil end
+	return res
+end
+
+local islands={}
+islands["Ancient Jungle • Jungle Cove [365]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Ancient Jungle"]["Jungle Cove"]:GetChildren()[365] end)) end
+islands["Ancient Jungle • Swamp ISLAND Model"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Ancient Jungle"]["Jungle Cove"]["Swamp ISLAND"].Model end)) end
+islands["Coral Reefs [20]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Coral Reefs"]:GetChildren()[20] end)) end
+islands["Cystal Island • Crate2"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Cystal Island"].Crate2 end)) end
+islands["Esoteric Depths [12]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Esoteric Depths"]:GetChildren()[12] end)) end
+islands["Esoteric Island [15]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Esoteric Island"]:GetChildren()[15] end)) end
+islands["Fisherman Island • Base"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Fisherman Island"].Base end)) end
+islands["Kohana [214]"]=function() return getCFrom(safeIndex(function() return workspace.Islands.Kohana:GetChildren()[214] end)) end
+islands["Mount Hallow • Dock"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Mount Hallow"].Dock end)) end
+islands["Tropical Grove • Telescope"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Tropical Grove"].Telescope end)) end
+islands["Crystal Cavern"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Crystal Cavern"] end)) end
+islands["Crystal Cavern • Fish Spot Secret [31]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Crystal Cavern"]:GetChildren()[31] end)) end
+
+local rods={}
+rods["Lost Isle • Fishing Rod Ruins"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Lost Isle"]["Fishing Rod Ruins"] end)) end
+rods["Lost Isle • Treasure Ruins"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Lost Isle"]["Treasure Ruins"] end)) end
+rods["Tropical Grove • Ares Rod (Crate2)"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Tropical Grove"].Crate2 end)) end
+rods["Ancient Jungle • !!! THE TEMPLE"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Ancient Jungle"]["!!! THE TEMPLE"] end)) end
+rods["Ancient Jungle • Bamboo Rod [39]"]=function() return getCFrom(safeIndex(function() return workspace.Islands["Ancient Jungle"]:GetChildren()[39] end)) end
+rods["Kohana • LAVA_FALLS [4]"]=function() return getCFrom(safeIndex(function() return workspace.Islands.Kohana.LAVA_FALLS:GetChildren()[4] end)) end
+rods["Kohana [247]"]=function() return getCFrom(safeIndex(function() return workspace.Islands.Kohana:GetChildren()[247] end)) end
+
+local function populateIslands()
+	ddIsl.clear()
+	for name,fn in pairs(islands) do ddIsl.add(name,fn) end
+	ddIslCanvas()
+end
+
+local function populateRods()
+	ddRod.clear()
+	for name,fn in pairs(rods) do ddRod.add(name,fn) end
+	ddRodCanvas()
+end
+
+local function populateNPC()
+	ddNpc.clear()
+	local npcFolder=workspace:FindFirstChild("NPC")
+	if not npcFolder then return end
+	for _,m in ipairs(npcFolder:GetChildren()) do
+		ddNpc.add(m.Name,function()
+			local cf=getCFrom(m)
+			return cf
+		end)
+	end
+	ddNpcCanvas()
+end
+
+populateNPC()
+populateIslands()
+populateRods()
+
+local minimized=false
+local dockBtn=Instance.new("TextButton")
+dockBtn.Parent=g
+dockBtn.Size=UDim2.fromOffset(64,32)
+dockBtn.Position=UDim2.new(0,18,1,-50)
+dockBtn.Text="TP"
+dockBtn.Font=Enum.Font.GothamBlack
+dockBtn.TextSize=18
+dockBtn.TextColor3=Color3.fromRGB(240,240,240)
+dockBtn.BackgroundColor3=Color3.fromRGB(34,34,34)
+dockBtn.BorderColor3=Color3.fromRGB(70,70,70)
+dockBtn.Visible=false
+
+mini.MouseButton1Click:Connect(function()
+	minimized=true
+	main.Visible=false
+	dockBtn.Visible=true
+end)
+dockBtn.MouseButton1Click:Connect(function()
+	minimized=false
+	main.Visible=true
+	dockBtn.Visible=false
+end)
+close.MouseButton1Click:Connect(function()
+	g:Destroy()
+end)
+
+local dragging=false
+local dragStart, startPos
+top.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+		dragging=true
+		dragStart=i.Position
+		startPos=main.Position
+	end
+end)
+top.InputChanged:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch then
+		if dragging then
+			local delta=i.Position-dragStart
+			main.Position=UDim2.new(startPos.X.Scale, startPos.X.Offset+delta.X, startPos.Y.Scale, startPos.Y.Offset+delta.Y)
+		end
+	end
+end)
+top.InputEnded:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=false end
+end)
+
+local function tpTo(cf)
+	if not cf then return end
+	local ch=p.Character or p.CharacterAdded:Wait()
+	ch:PivotTo(cf*CFrame.new(0,3,0))
+end
+
+tpBtn.MouseButton1Click:Connect(function()
+	local sel=ddNpc.get() or ddIsl.get() or ddRod.get()
+	if not sel then return end
+	local _,cb=table.unpack(sel)
+	local cf=cb and cb()
+	tpTo(cf)
+end)
+
+refreshBtn.MouseButton1Click:Connect(function()
+	populateNPC()
+end)
+
+offBtn.MouseButton1Click:Connect(function()
+	g.Enabled=false
+end)

@@ -1,0 +1,138 @@
+local rs=game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+local gui=Instance.new("ScreenGui")
+gui.Name="AutoFish_UI"; gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset=true; gui.ResetOnSpawn=false; gui.Parent=game:GetService("CoreGui")
+
+local function mkLabel(txt,sz,bold,color)
+	local t=Instance.new("TextLabel"); t.BackgroundTransparency=1
+	t.Font=Enum.Font.Gotham; t.Text=txt; t.TextSize=sz or 12
+	t.TextXAlignment=Enum.TextXAlignment.Left; t.TextColor3=color or Color3.fromRGB(235,235,235)
+	t.TextTruncate=Enum.TextTruncate.AtEnd; if bold then t.FontFace=Font.new(t.FontFace.Family,Enum.FontWeight.Bold) end; return t
+end
+
+local main=Instance.new("Frame")
+main.Parent=gui; main.Size=UDim2.fromOffset(240,420) -- dipanjangin
+main.Position=UDim2.new(0,16,0.25,0); main.BackgroundColor3=Color3.fromRGB(26,26,26)
+main.BorderColor3=Color3.fromRGB(60,60,60); main.BorderSizePixel=1; main.ClipsDescendants=true
+
+local top=Instance.new("Frame"); top.Parent=main; top.Size=UDim2.new(1,0,0,26)
+top.BackgroundColor3=Color3.fromRGB(34,34,34); top.ClipsDescendants=true
+
+local title=mkLabel("Auto Fish Speed",14,true); title.Parent=top; title.Position=UDim2.new(0,8,0,4); title.Size=UDim2.fromOffset(160,18)
+local close=Instance.new("TextButton"); close.Parent=top; close.Size=UDim2.fromOffset(26,22); close.Position=UDim2.new(1,-30,0,2)
+close.Text="X"; close.Font=Enum.Font.GothamBlack; close.TextSize=14; close.BackgroundTransparency=1; close.TextColor3=Color3.fromRGB(240,96,96)
+local mini=Instance.new("TextButton"); mini.Parent=top; mini.Size=UDim2.fromOffset(26,22); mini.Position=UDim2.new(1,-58,0,2)
+mini.Text="–"; mini.Font=Enum.Font.GothamBlack; mini.TextSize=16; mini.BackgroundTransparency=1; mini.TextColor3=Color3.fromRGB(200,200,200)
+
+-- Scrolling body (biar konten panjang tetap terlihat)
+local body=Instance.new("ScrollingFrame")
+body.Parent=main; body.Position=UDim2.new(0,0,0,26); body.Size=UDim2.new(1,0,1,-26)
+body.BackgroundTransparency=1; body.BorderSizePixel=0; body.ScrollBarThickness=6
+body.AutomaticCanvasSize=Enum.AutomaticSize.Y; body.CanvasSize=UDim2.new(0,0,0,0)
+
+local list=Instance.new("UIListLayout",body)
+list.Padding=UDim.new(0,3); list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+local pad=Instance.new("UIPadding",body); pad.PaddingBottom=UDim.new(0,6); pad.PaddingTop=UDim.new(0,3)
+
+local function rowBox(labelTxt,helpTxt,placeholder,defaultText)
+	local holder=Instance.new("Frame"); holder.Size=UDim2.new(1,-12,0,46)
+	holder.BackgroundColor3=Color3.fromRGB(38,38,38); holder.BorderColor3=Color3.fromRGB(70,70,70)
+	holder.BorderSizePixel=1; holder.ClipsDescendants=true
+	local l=mkLabel(labelTxt,12,true); l.Parent=holder; l.Position=UDim2.new(0,6,0,3); l.Size=UDim2.new(1,-40,0,14)
+	local help=mkLabel(helpTxt or "",10,false,Color3.fromRGB(170,170,170)); help.Parent=holder; help.Position=UDim2.new(0,6,0,16); help.Size=UDim2.new(1,-40,0,12)
+	local clr=Instance.new("TextButton"); clr.Parent=holder; clr.Size=UDim2.fromOffset(20,16); clr.Position=UDim2.new(1,-24,0,3)
+	clr.Text="X"; clr.Font=Enum.Font.GothamBold; clr.TextSize=12; clr.BackgroundColor3=Color3.fromRGB(48,48,48); clr.BorderColor3=Color3.fromRGB(90,90,90); clr.TextColor3=Color3.fromRGB(235,235,235)
+	local box=Instance.new("TextBox"); box.Parent=holder; box.Size=UDim2.new(1,-12,0,18); box.Position=UDim2.new(0,6,0,30)
+	box.BackgroundColor3=Color3.fromRGB(30,30,30); box.BorderColor3=Color3.fromRGB(65,65,65); box.Font=Enum.Font.Gotham; box.TextSize=12
+	box.TextColor3=Color3.fromRGB(235,235,235); box.PlaceholderText=placeholder or ""; box.ClearTextOnFocus=false; box.TextTruncate=Enum.TextTruncate.AtEnd; box.Text=defaultText or ""
+	clr.MouseButton1Click:Connect(function() box.Text=defaultText or "" end)
+	return holder,box
+end
+
+local function tinyButton(text)
+	local b=Instance.new("TextButton"); b.Size=UDim2.new(0,70,0,22)
+	b.BackgroundColor3=Color3.fromRGB(44,44,44); b.BorderColor3=Color3.fromRGB(85,85,85)
+	b.Font=Enum.Font.Gotham; b.TextSize=12; b.TextColor3=Color3.fromRGB(235,235,235); b.Text=text; b.TextTruncate=Enum.TextTruncate.AtEnd; b.ClipsDescendants=true
+	return b
+end
+
+local bar=Instance.new("Frame"); bar.Parent=body; bar.Size=UDim2.new(1,-12,0,26); bar.BackgroundTransparency=1
+local grid=Instance.new("UIGridLayout",bar); grid.CellPadding=UDim2.new(0,4,0,0); grid.CellSize=UDim2.new(0,70,0,22)
+local equip=tinyButton("Equip") equip.Parent=bar
+local unequip=tinyButton("Unequip") unequip.Parent=bar
+
+local loopRow,loopBox=rowBox("Loop (0=∞)","Jumlah pengulangan, 0=tanpa batas","10","10") loopRow.Parent=body
+local d1Row,d1Box=rowBox("Delay 1 (ms)","Jeda dari Charge → ReqFish","250","250") d1Row.Parent=body
+local d2Row,d2Box=rowBox("Delay 2 (ms)","Jeda setelah ReqFish sebelum AutoComplete","200","200") d2Row.Parent=body
+local d3Row,d3Box=rowBox("Delay 3 (ms)","Jeda setelah AutoComplete sebelum ulang","500","500") d3Row.Parent=body
+local xRow,xBox=rowBox("ReqFishLoc X","Posisi X minigame","-0.987","-0.9879990220069885") xRow.Parent=body
+local yRow,yBox=rowBox("ReqFishLoc Y","Posisi Y minigame","0.842","0.8429018479967284") yRow.Parent=body
+local tRow,tBox=rowBox("Timestamp","Kosongkan untuk otomatis","1761811988.3497","1761811988.3497") tRow.Parent=body
+
+local function smallButton(text)
+	local b=Instance.new("TextButton"); b.Size=UDim2.new(1,-12,0,26)
+	b.BackgroundColor3=Color3.fromRGB(38,38,38); b.BorderColor3=Color3.fromRGB(70,70,70)
+	b.Font=Enum.Font.Gotham; b.TextSize=14; b.TextColor3=Color3.fromRGB(235,235,235); b.Text=text; b.TextTruncate=Enum.TextTruncate.AtEnd; b.ClipsDescendants=true
+	return b
+end
+local startBtn=smallButton("Start") startBtn.Parent=body
+local stopBtn=smallButton("Stop") stopBtn.Parent=body
+
+local status=mkLabel("Idle",12,false); status.Parent=body; status.Size=UDim2.new(1,-12,0,16); status.TextXAlignment=Enum.TextXAlignment.Center
+
+local dockBtn=Instance.new("TextButton"); dockBtn.Parent=gui; dockBtn.Size=UDim2.fromOffset(44,22)
+dockBtn.Position=UDim2.new(0,12,1,-34); dockBtn.Text="AF"; dockBtn.Font=Enum.Font.GothamBlack; dockBtn.TextSize=12
+dockBtn.TextColor3=Color3.fromRGB(240,240,240); dockBtn.BackgroundColor3=Color3.fromRGB(34,34,34); dockBtn.BorderColor3=Color3.fromRGB(70,70,70); dockBtn.Visible=false
+
+-- Drag main
+local dragging=false; local dragStart,startPos
+top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=true; dragStart=i.Position; startPos=main.Position end end)
+top.InputChanged:Connect(function(i) if dragging and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then local d=i.Position-dragStart; main.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y) end end)
+top.InputEnded:Connect(function() dragging=false end)
+
+-- Drag dock
+local draggingDock=false; local dockStart,dockPos
+dockBtn.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then draggingDock=true; dockStart=i.Position; dockPos=dockBtn.Position end end)
+dockBtn.InputChanged:Connect(function(i) if draggingDock and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then local d=i.Position-dockStart; dockBtn.Position=UDim2.new(dockPos.X.Scale,dockPos.X.Offset+d.X,dockPos.Y.Scale,dockPos.Y.Offset+d.Y) end end)
+dockBtn.InputEnded:Connect(function() draggingDock=false end)
+
+mini.MouseButton1Click:Connect(function() main.Visible=false; dockBtn.Visible=true end)
+dockBtn.MouseButton1Click:Connect(function() main.Visible=true; dockBtn.Visible=false end)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+-- Angka-only untuk loop & delays
+local function digitsOnly(tb,def)
+	tb:GetPropertyChangedSignal("Text"):Connect(function()
+		local filtered=tb.Text:gsub("%D",""); if filtered=="" then tb.Text="" else if filtered~=tb.Text then tb.Text=filtered end end
+	end)
+	tb.FocusLost:Connect(function() if tb.Text=="" then tb.Text=def end end)
+end
+digitsOnly(loopBox,"10"); digitsOnly(d1Box,"250"); digitsOnly(d2Box,"200"); digitsOnly(d3Box,"500")
+
+local function num(v,def) local n=tonumber(v); if not n then return def end; return n end
+
+local running=false
+local function charge() return rs:WaitForChild("RF/ChargeFishingRod"):InvokeServer() end
+local function reqfish(x,y,t) return rs:WaitForChild("RF/RequestFishingMinigameStarted"):InvokeServer(x,y,t) end
+local function complete() rs:WaitForChild("RE/FishingCompleted"):FireServer() end
+
+equip.MouseButton1Click:Connect(function() rs:WaitForChild("RE/EquipToolFromHotbar"):FireServer(1) end)
+unequip.MouseButton1Click:Connect(function() rs:WaitForChild("RE/UnequipToolFromHotbar"):FireServer() end)
+
+startBtn.MouseButton1Click:Connect(function()
+	if running then return end
+	running=true; startBtn.Text="Running"
+	local loops=num(loopBox.Text,10)
+	local d1=num(d1Box.Text,250)/1000; local d2=num(d2Box.Text,200)/1000; local d3=num(d3Box.Text,500)/1000
+	local rx=num(xBox.Text,-0.9879990220069885); local ry=num(yBox.Text,0.8429018479967284); local ts=tonumber(tBox.Text)
+	local i=0
+	while running and (loops==0 or i<loops) do
+		i+=1; status.Text="Loop "..i
+		pcall(charge); task.wait(d1)
+		pcall(function() reqfish(rx,ry,ts or os.clock()) end)
+		task.wait(d2); pcall(complete); task.wait(d3)
+	end
+	startBtn.Text="Start"; status.Text="Idle"; running=false
+end)
+stopBtn.MouseButton1Click:Connect(function() running=false end)

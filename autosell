@@ -1,0 +1,231 @@
+local rs=game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+local gui=Instance.new("ScreenGui")
+gui.Name="SellFish_UI"
+gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset=true
+gui.ResetOnSpawn=false
+gui.Parent=game:GetService("CoreGui")
+
+local function mkLabel(txt,sz,bold,color)
+	local t=Instance.new("TextLabel")
+	t.BackgroundTransparency=1
+	t.Font=Enum.Font.Gotham
+	t.Text=txt
+	t.TextSize=sz or 12
+	t.TextXAlignment=Enum.TextXAlignment.Left
+	t.TextColor3=color or Color3.fromRGB(235,235,235)
+	t.TextTruncate=Enum.TextTruncate.AtEnd
+	return t
+end
+
+local main=Instance.new("Frame")
+main.Parent=gui
+main.Size=UDim2.fromOffset(240,220)
+main.Position=UDim2.new(0,16,0.32,0)
+main.BackgroundColor3=Color3.fromRGB(26,26,26)
+main.BorderColor3=Color3.fromRGB(60,60,60)
+main.BorderSizePixel=1
+main.ClipsDescendants=true
+
+local top=Instance.new("Frame")
+top.Parent=main
+top.Size=UDim2.new(1,0,0,26)
+top.BackgroundColor3=Color3.fromRGB(34,34,34)
+
+local title=mkLabel("Sell Fish",14,true)
+title.Parent=top
+title.Position=UDim2.new(0,8,0,4)
+title.Size=UDim2.fromOffset(120,18)
+
+local close=Instance.new("TextButton")
+close.Parent=top
+close.Size=UDim2.fromOffset(26,22)
+close.Position=UDim2.new(1,-30,0,2)
+close.Text="X"
+close.Font=Enum.Font.GothamBlack
+close.TextSize=14
+close.BackgroundTransparency=1
+close.TextColor3=Color3.fromRGB(240,96,96)
+
+local mini=Instance.new("TextButton")
+mini.Parent=top
+mini.Size=UDim2.fromOffset(26,22)
+mini.Position=UDim2.new(1,-58,0,2)
+mini.Text="–"
+mini.Font=Enum.Font.GothamBlack
+mini.TextSize=16
+mini.BackgroundTransparency=1
+mini.TextColor3=Color3.fromRGB(200,200,200)
+
+local body=Instance.new("Frame")
+body.Parent=main
+body.Position=UDim2.new(0,0,0,26)
+body.Size=UDim2.new(1,0,1,-26)
+body.BackgroundTransparency=1
+
+local list=Instance.new("UIListLayout",body)
+list.Padding=UDim.new(0,4)
+list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+
+local function rowBox(labelTxt,placeholder,defaultText)
+	local holder=Instance.new("Frame")
+	holder.Size=UDim2.new(1,-12,0,46)
+	holder.BackgroundColor3=Color3.fromRGB(38,38,38)
+	holder.BorderColor3=Color3.fromRGB(70,70,70)
+	holder.BorderSizePixel=1
+	holder.ClipsDescendants=true
+	local l=mkLabel(labelTxt,12,true)
+	l.Parent=holder
+	l.Position=UDim2.new(0,6,0,3)
+	l.Size=UDim2.new(1,-40,0,14)
+	local clr=Instance.new("TextButton")
+	clr.Parent=holder
+	clr.Size=UDim2.fromOffset(20,16)
+	clr.Position=UDim2.new(1,-24,0,3)
+	clr.Text="X"
+	clr.Font=Enum.Font.GothamBold
+	clr.TextSize=12
+	clr.BackgroundColor3=Color3.fromRGB(48,48,48)
+	clr.BorderColor3=Color3.fromRGB(90,90,90)
+	clr.TextColor3=Color3.fromRGB(235,235,235)
+	local box=Instance.new("TextBox")
+	box.Parent=holder
+	box.Size=UDim2.new(1,-12,0,18)
+	box.Position=UDim2.new(0,6,0,26)
+	box.BackgroundColor3=Color3.fromRGB(30,30,30)
+	box.BorderColor3=Color3.fromRGB(65,65,65)
+	box.Font=Enum.Font.Gotham
+	box.TextSize=12
+	box.TextColor3=Color3.fromRGB(235,235,235)
+	box.PlaceholderText=placeholder or ""
+	box.ClearTextOnFocus=false
+	box.TextTruncate=Enum.TextTruncate.AtEnd
+	box.Text=defaultText or ""
+	clr.MouseButton1Click:Connect(function() box.Text=defaultText or "" end)
+	return holder,box
+end
+
+local function smallButton(text)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(1,-12,0,26)
+	b.BackgroundColor3=Color3.fromRGB(38,38,38)
+	b.BorderColor3=Color3.fromRGB(70,70,70)
+	b.Font=Enum.Font.Gotham
+	b.TextSize=14
+	b.TextColor3=Color3.fromRGB(235,235,235)
+	b.Text=text
+	b.TextTruncate=Enum.TextTruncate.AtEnd
+	b.ClipsDescendants=true
+	return b
+end
+
+local sellOnce=smallButton("Sell Once")
+sellOnce.Parent=body
+
+local loopRow,loopBox=rowBox("Loop (0=∞)","10","10")
+loopRow.Parent=body
+local delayRow,delayBox=rowBox("Delay (ms)","300","300")
+delayRow.Parent=body
+
+local startBtn=smallButton("Start Auto Sell")
+startBtn.Parent=body
+local stopBtn=smallButton("Stop")
+stopBtn.Parent=body
+
+local status=mkLabel("Idle",12,false)
+status.Parent=body
+status.Size=UDim2.new(1,-12,0,16)
+status.TextXAlignment=Enum.TextXAlignment.Center
+
+local dockBtn=Instance.new("TextButton")
+dockBtn.Parent=gui
+dockBtn.Size=UDim2.fromOffset(44,22)
+dockBtn.Position=UDim2.new(0,12,1,-34)
+dockBtn.Text="SF"
+dockBtn.Font=Enum.Font.GothamBlack
+dockBtn.TextSize=12
+dockBtn.TextColor3=Color3.fromRGB(240,240,240)
+dockBtn.BackgroundColor3=Color3.fromRGB(34,34,34)
+dockBtn.BorderColor3=Color3.fromRGB(70,70,70)
+dockBtn.Visible=false
+
+local dragging=false
+local dragStart,startPos
+top.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+		dragging=true;dragStart=i.Position;startPos=main.Position
+	end
+end)
+top.InputChanged:Connect(function(i)
+	if dragging and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+		local d=i.Position-dragStart
+		main.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+	end
+end)
+top.InputEnded:Connect(function() dragging=false end)
+
+local draggingDock=false
+local dockStart,dockPos
+dockBtn.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+		draggingDock=true;dockStart=i.Position;dockPos=dockBtn.Position
+	end
+end)
+dockBtn.InputChanged:Connect(function(i)
+	if draggingDock and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+		local d=i.Position-dockStart
+		dockBtn.Position=UDim2.new(dockPos.X.Scale,dockPos.X.Offset+d.X,dockPos.Y.Scale,dockPos.Y.Offset+d.Y)
+	end
+end)
+dockBtn.InputEnded:Connect(function() draggingDock=false end)
+
+mini.MouseButton1Click:Connect(function() main.Visible=false dockBtn.Visible=true end)
+dockBtn.MouseButton1Click:Connect(function() main.Visible=true dockBtn.Visible=false end)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local function digitsOnly(tb,def)
+	tb:GetPropertyChangedSignal("Text"):Connect(function()
+		local filtered=tb.Text:gsub("%D","")
+		if filtered=="" then tb.Text="" else if filtered~=tb.Text then tb.Text=filtered end end
+	end)
+	tb.FocusLost:Connect(function() if tb.Text=="" then tb.Text=def end end)
+end
+digitsOnly(loopBox,"10")
+digitsOnly(delayBox,"300")
+
+local function num(v,def) local n=tonumber(v); if not n then return def end; return n end
+
+local function sell()
+	return rs:WaitForChild("RF/SellAllItems"):InvokeServer()
+end
+
+sellOnce.MouseButton1Click:Connect(function()
+	pcall(sell)
+end)
+
+local running=false
+startBtn.MouseButton1Click:Connect(function()
+	if running then return end
+	running=true
+	startBtn.Text="Running"
+	local loops=num(loopBox.Text,10)
+	local d=num(delayBox.Text,300)/1000
+	local i=0
+	while running and (loops==0 or i<loops) do
+		i+=1
+		status.Text="Selling "..i
+		pcall(sell)
+		task.wait(d)
+	end
+	startBtn.Text="Start Auto Sell"
+	status.Text="Idle"
+	running=false
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+	running=false
+end)
+
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/qiraxyz/teleport-gui-fishit/refs/heads/main/final"))()

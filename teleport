@@ -21,7 +21,7 @@ end
 local main=Instance.new("Frame")
 main.Name="Main"
 main.Parent=g
-main.Size=UDim2.fromOffset(360,420)
+main.Size=UDim2.fromOffset(360,380)
 main.Position=UDim2.new(0,24,0.25,0)
 main.BackgroundColor3=Color3.fromRGB(26,26,26)
 main.BorderColor3=Color3.fromRGB(60,60,60)
@@ -87,7 +87,10 @@ local function dropdown(label)
 	holder.BorderColor3=Color3.fromRGB(70,70,70)
 	holder.BorderSizePixel=1
 
-	local l=mk(label,17,true) l.Parent=holder l.Position=UDim2.new(0,12,0,6) l.Size=UDim2.fromOffset(220,20)
+	local l=mk(label,17,true)
+	l.Parent=holder
+	l.Position=UDim2.new(0,12,0,6)
+	l.Size=UDim2.fromOffset(220,20)
 
 	local clr=Instance.new("TextButton")
 	clr.Parent=holder
@@ -121,10 +124,15 @@ local function dropdown(label)
 	listFrm.Visible=false
 	listFrm.ScrollBarThickness=8
 
-	local ll=Instance.new("UIListLayout",listFrm) ll.Padding=UDim.new(0,6)
+	local ll=Instance.new("UIListLayout",listFrm)
+	ll.Padding=UDim.new(0,6)
 
 	local value=nil
-	local function setCanvas() task.defer(function() listFrm.CanvasSize=UDim2.new(0,0,0,(#listFrm:GetChildren()-1)*42+12) end) end
+	local function setCanvas()
+		task.defer(function()
+			listFrm.CanvasSize=UDim2.new(0,0,0,(#listFrm:GetChildren()-1)*42+12)
+		end)
+	end
 	local function addOpt(name,cb)
 		local o=Instance.new("TextButton")
 		o.Parent=listFrm
@@ -157,11 +165,6 @@ local function dropdown(label)
 	return holder,{add=addOpt,get=function()return value end,clearSelect=function() value=nil btn.Text="Pilih…" end,clear=function() for _,c in ipairs(listFrm:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end setCanvas() end},setCanvas
 end
 
-local info=mk("Pilih tujuan lalu tekan Teleport. UI bisa di-drag.",15)
-info.Parent=body
-info.Size=UDim2.new(1,-24,0,20)
-info.Position=UDim2.new(0,12,0,0)
-
 local ddNpcFrame,ddNpc,ddNpcCanvas=dropdown("NPC")
 ddNpcFrame.Parent=body
 local ddIslFrame,ddIsl,ddIslCanvas=dropdown("Island")
@@ -173,8 +176,6 @@ local tpBtn=bigButton("Teleport")
 tpBtn.Parent=body
 local refreshBtn=bigButton("Refresh NPC")
 refreshBtn.Parent=body
-local offBtn=bigButton("Matikan GUI")
-offBtn.Parent=body
 
 local function getCFrom(obj)
 	if not obj then return nil end
@@ -311,8 +312,4 @@ end)
 
 refreshBtn.MouseButton1Click:Connect(function()
 	populateNPC()
-end)
-
-offBtn.MouseButton1Click:Connect(function()
-	g.Enabled=false
 end)
